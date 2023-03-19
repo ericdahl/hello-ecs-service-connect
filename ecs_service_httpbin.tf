@@ -1,7 +1,10 @@
 resource "aws_ecs_task_definition" "httpbin" {
   family = "httpbin"
 
-  #  requires_compatibilities = ["FARGATE"]
+  requires_compatibilities = ["FARGATE"]
+
+  execution_role_arn = aws_iam_role.httpbin_task_execution.arn
+
 
   network_mode = "awsvpc"
   container_definitions = jsonencode([
@@ -15,13 +18,26 @@ resource "aws_ecs_task_definition" "httpbin" {
           containerPort = 8080
           hostPort      = 8080
         }
-      ]
+      ],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.httpbin.name
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "httpbin"
+        }
+      }
     }
   ])
 
   cpu    = "256"
   memory = "512"
 
+}
+
+resource "aws_cloudwatch_log_group" "httpbin" {
+  name              = "/${local.name}/httpbin"
+  retention_in_days = 1
 }
 
 resource "aws_ecs_service" "httpbin" {
@@ -36,6 +52,11 @@ resource "aws_ecs_service" "httpbin" {
   }
 
   network_configuration {
+
+    # for demo purposes only; no private subnets here
+    # to save costs on NAT GW, speed up deploys, etc
+    assign_public_ip = true
+
     subnets = [
       aws_subnet.public.id
     ]
@@ -81,4 +102,50 @@ resource "aws_security_group_rule" "httpbin_ingress_admin" {
   protocol  = "-1"
 
   cidr_blocks = [var.admin_cidr]
+}
+
+resource "aws_iam_role" "httpbin_task_execution" {
+  name = "httpbin-task-execution"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "httpbin_task_execution" {
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "httpbin_task_execution" {
+  role       = aws_iam_role.httpbin_task_execution.name
+  policy_arn = aws_iam_policy.httpbin_task_execution.arn
 }
