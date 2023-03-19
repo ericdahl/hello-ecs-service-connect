@@ -1,0 +1,8 @@
+target/
+*.iml
+\.idea
+
+*.tfstate*
+*.tfvars
+.terraform.lock.hcl
+.terraform/
