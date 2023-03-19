@@ -66,13 +66,36 @@ resource "aws_ecs_service" "httpbin" {
     ]
   }
 
-  #  service_connect_configuration {
-  #    enabled = true
+    service_connect_configuration {
+      enabled = true
 
-  #    log_configuration
-  #  }
+      service {
+        port_name = "http"
+
+        discovery_name = "httpbin"
+
+        client_alias {
+          port = 8080
+          dns_name = "httpbin"
+        }
+      }
+
+      log_configuration {
+        log_driver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.httpbin_ecs_service_connect.name
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "httpbin"
+        }
+      }
+    }
 
   task_definition = aws_ecs_task_definition.httpbin.arn
+}
+
+resource "aws_cloudwatch_log_group" "httpbin_ecs_service_connect" {
+  name = "/ecs/httpbin"
 }
 
 resource "aws_security_group" "httpbin" {
@@ -135,6 +158,7 @@ resource "aws_iam_policy" "httpbin_task_execution" {
         "ecr:BatchCheckLayerAvailability",
         "ecr:GetDownloadUrlForLayer",
         "ecr:BatchGetImage",
+        "logs:CreateLogGroup",
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
