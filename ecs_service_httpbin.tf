@@ -51,7 +51,7 @@ resource "aws_ecs_service" "httpbin" {
   #    log_configuration
   #  }
 
-  task_definition = aws_ecs_task_definition.httpbin.id
+  task_definition = aws_ecs_task_definition.httpbin.arn
 }
 
 resource "aws_security_group" "httpbin" {
