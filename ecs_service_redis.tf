@@ -75,7 +75,7 @@ resource "aws_ecs_service" "redis" {
         discovery_name = "redis"
 
         client_alias {
-          port = 8080
+          port = 6379
           dns_name = "redis"
         }
       }
