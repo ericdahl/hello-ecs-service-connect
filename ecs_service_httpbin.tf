@@ -15,6 +15,7 @@ resource "aws_ecs_task_definition" "httpbin" {
         {
           name          = "http"
           protocol      = "tcp"
+          appProtocol   = "http"
           containerPort = 8080
           hostPort      = 8080
         }
@@ -90,6 +91,8 @@ resource "aws_ecs_service" "httpbin" {
         }
       }
     }
+
+
 
   task_definition = aws_ecs_task_definition.httpbin.arn
 }
