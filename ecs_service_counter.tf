@@ -20,10 +20,10 @@ resource "aws_ecs_task_definition" "counter" {
           hostPort      = 8080
         }
       ],
-      environment: [
+      environment : [
         {
-          "name": "SPRING_REDIS_HOST",
-          "value": "redis:6379"
+          "name" : "SPRING_REDIS_HOST",
+          "value" : "redis:6379"
         }
       ],
       logConfiguration = {
@@ -73,30 +73,30 @@ resource "aws_ecs_service" "counter" {
     ]
   }
 
-    service_connect_configuration {
-      enabled = true
+  service_connect_configuration {
+    enabled = true
 
-      service {
-        port_name = "http"
+    service {
+      port_name = "http"
 
-        discovery_name = "counter"
+      discovery_name = "counter"
 
-        client_alias {
-          port = 8080
-          dns_name = "counter"
-        }
-      }
-
-      log_configuration {
-        log_driver = "awslogs"
-
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.counter_ecs_service_connect.name
-          awslogs-region        = "us-east-1"
-          awslogs-stream-prefix = "counter"
-        }
+      client_alias {
+        port     = 8080
+        dns_name = "counter"
       }
     }
+
+    log_configuration {
+      log_driver = "awslogs"
+
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.counter_ecs_service_connect.name
+        awslogs-region        = "us-east-1"
+        awslogs-stream-prefix = "counter"
+      }
+    }
+  }
 
 
 

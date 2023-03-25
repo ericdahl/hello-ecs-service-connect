@@ -67,30 +67,30 @@ resource "aws_ecs_service" "httpbin" {
     ]
   }
 
-    service_connect_configuration {
-      enabled = true
+  service_connect_configuration {
+    enabled = true
 
-      service {
-        port_name = "http"
+    service {
+      port_name = "http"
 
-        discovery_name = "httpbin"
+      discovery_name = "httpbin"
 
-        client_alias {
-          port = 8080
-          dns_name = "httpbin"
-        }
-      }
-
-      log_configuration {
-        log_driver = "awslogs"
-
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.httpbin_ecs_service_connect.name
-          awslogs-region        = "us-east-1"
-          awslogs-stream-prefix = "httpbin"
-        }
+      client_alias {
+        port     = 8080
+        dns_name = "httpbin"
       }
     }
+
+    log_configuration {
+      log_driver = "awslogs"
+
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.httpbin_ecs_service_connect.name
+        awslogs-region        = "us-east-1"
+        awslogs-stream-prefix = "httpbin"
+      }
+    }
+  }
 
 
 

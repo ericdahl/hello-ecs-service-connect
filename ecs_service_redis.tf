@@ -66,30 +66,30 @@ resource "aws_ecs_service" "redis" {
     ]
   }
 
-    service_connect_configuration {
-      enabled = true
+  service_connect_configuration {
+    enabled = true
 
-      service {
-        port_name = "redis"
+    service {
+      port_name = "redis"
 
-        discovery_name = "redis"
+      discovery_name = "redis"
 
-        client_alias {
-          port = 6379
-          dns_name = "redis"
-        }
-      }
-
-      log_configuration {
-        log_driver = "awslogs"
-
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.redis_ecs_service_connect.name
-          awslogs-region        = "us-east-1"
-          awslogs-stream-prefix = "redis"
-        }
+      client_alias {
+        port     = 6379
+        dns_name = "redis"
       }
     }
+
+    log_configuration {
+      log_driver = "awslogs"
+
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.redis_ecs_service_connect.name
+        awslogs-region        = "us-east-1"
+        awslogs-stream-prefix = "redis"
+      }
+    }
+  }
 
   task_definition = aws_ecs_task_definition.redis.arn
 }
