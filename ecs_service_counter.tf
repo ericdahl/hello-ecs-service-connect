@@ -5,6 +5,7 @@ resource "aws_ecs_task_definition" "counter" {
 
   execution_role_arn = aws_iam_role.counter_task_execution.arn
 
+  task_role_arn = aws_iam_role.counter_task.arn
 
   network_mode = "awsvpc"
   container_definitions = jsonencode([
@@ -23,7 +24,7 @@ resource "aws_ecs_task_definition" "counter" {
       environment : [
         {
           "name" : "SPRING_REDIS_HOST",
-          "value" : "redis:6379"
+          "value" : "redis.${local.name}"
         }
       ],
       logConfiguration = {
@@ -52,6 +53,8 @@ resource "aws_ecs_service" "counter" {
   cluster = aws_ecs_cluster.default.name
 
   desired_count = 1
+
+  enable_execute_command = true
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
@@ -153,6 +156,65 @@ resource "aws_iam_role" "counter_task_execution" {
   ]
 }
 EOF
+}
+
+resource "aws_iam_role" "counter_task" {
+  name = "counter-task"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+data "aws_iam_policy_document" "counter_task" {
+
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "logs:DescribeLogGroups"
+    ]
+
+    resources = ["*"]
+  }
+
+}
+
+
+resource "aws_iam_policy" "counter_task" {
+  name = "counter-task"
+
+  policy = data.aws_iam_policy_document.counter_task.json
+}
+
+resource "aws_iam_role_policy_attachment" "counter_task" {
+  role       = aws_iam_role.counter_task.name
+  policy_arn = aws_iam_policy.counter_task.arn
 }
 
 resource "aws_iam_policy" "counter_task_execution" {
