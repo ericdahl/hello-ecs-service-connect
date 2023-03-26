@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "counter" {
       environment : [
         {
           "name" : "SPRING_REDIS_HOST",
-          "value" : "redis.${local.name}"
+          "value" : "redis"
         }
       ],
       logConfiguration = {

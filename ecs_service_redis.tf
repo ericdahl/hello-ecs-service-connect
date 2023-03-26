@@ -127,6 +127,18 @@ resource "aws_security_group_rule" "redis_ingress_admin" {
   cidr_blocks = [var.admin_cidr]
 }
 
+resource "aws_security_group_rule" "redis_ingress_counter" {
+  security_group_id = aws_security_group.redis.id
+
+  type = "ingress"
+
+  from_port = 6379
+  to_port   = 6379
+  protocol  = "tcp"
+
+  source_security_group_id = aws_security_group.counter.id
+}
+
 resource "aws_iam_role" "redis_task_execution" {
   name = "redis-task-execution"
 
