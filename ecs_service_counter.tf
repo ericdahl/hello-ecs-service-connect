@@ -149,44 +149,9 @@ resource "aws_iam_role" "counter_task" {
   assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
-data "aws_iam_policy_document" "counter_task" {
-
-  statement {
-
-    effect = "Allow"
-
-    actions = [
-      "ssmmessages:CreateControlChannel",
-      "ssmmessages:CreateDataChannel",
-      "ssmmessages:OpenControlChannel",
-      "ssmmessages:OpenDataChannel"
-    ]
-
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "logs:DescribeLogGroups"
-    ]
-
-    resources = ["*"]
-  }
-
-}
-
-
-resource "aws_iam_policy" "counter_task" {
-  name = "counter-task"
-
-  policy = data.aws_iam_policy_document.counter_task.json
-}
-
-resource "aws_iam_role_policy_attachment" "counter_task" {
+resource "aws_iam_role_policy_attachment" "counter_task_ecs_exec" {
   role       = aws_iam_role.counter_task.name
-  policy_arn = aws_iam_policy.counter_task.arn
+  policy_arn = aws_iam_policy.ecs_task_exec.arn
 }
 
 resource "aws_iam_role_policy_attachment" "counter_task_execution" {

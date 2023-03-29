@@ -147,49 +147,17 @@ resource "aws_iam_role" "redis_task_execution" {
   assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
+resource "aws_iam_role_policy_attachment" "redis_task_execution" {
+  role       = aws_iam_role.redis_task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
 resource "aws_iam_role" "redis_task" {
   name               = "redis-task"
   assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
-
-
-
-data "aws_iam_policy_document" "redis_task" {
-
-  statement {
-
-    effect = "Allow"
-
-    actions = [
-      "ssmmessages:CreateControlChannel",
-      "ssmmessages:CreateDataChannel",
-      "ssmmessages:OpenControlChannel",
-      "ssmmessages:OpenDataChannel"
-    ]
-
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "logs:DescribeLogGroups"
-    ]
-
-    resources = ["*"]
-  }
-
-}
-
-resource "aws_iam_policy" "redis_task" {
-  name = "redis-task"
-
-  policy = data.aws_iam_policy_document.counter_task.json
-}
-
-resource "aws_iam_role_policy_attachment" "redis_task_execution" {
-  role       = aws_iam_role.redis_task_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+resource "aws_iam_role_policy_attachment" "redis_task_ecs_exec" {
+  role       = aws_iam_role.redis_task.name
+  policy_arn = aws_iam_policy.ecs_task_exec.arn
 }
