@@ -9,4 +9,3 @@ Demo app of using ECS Service Connect on Fargate
 ## TODO
 
 - seems to randomly not work. Timing issues or DNS caching?
-- is HTTP+DNS namespace required or just HTTP? docs indicate HTTP but doesn't work?
