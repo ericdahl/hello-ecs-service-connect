@@ -4,6 +4,7 @@ resource "aws_ecs_task_definition" "redis" {
   requires_compatibilities = ["FARGATE"]
 
   execution_role_arn = aws_iam_role.redis_task_execution.arn
+  task_role_arn      = aws_iam_role.redis_task.arn
 
 
   network_mode = "awsvpc"
@@ -30,9 +31,8 @@ resource "aws_ecs_task_definition" "redis" {
     }
   ])
 
-  cpu    = "256"
-  memory = "512"
-
+  cpu    = 256
+  memory = 512
 }
 
 resource "aws_cloudwatch_log_group" "redis" {
@@ -45,6 +45,8 @@ resource "aws_ecs_service" "redis" {
   cluster = aws_ecs_cluster.default.name
 
   desired_count = 1
+
+  enable_execute_command = true
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
@@ -145,6 +147,47 @@ resource "aws_iam_role" "redis_task_execution" {
   assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
+resource "aws_iam_role" "redis_task" {
+  name               = "redis-task"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
+}
+
+
+
+
+data "aws_iam_policy_document" "redis_task" {
+
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "logs:DescribeLogGroups"
+    ]
+
+    resources = ["*"]
+  }
+
+}
+
+resource "aws_iam_policy" "redis_task" {
+  name = "redis-task"
+
+  policy = data.aws_iam_policy_document.counter_task.json
+}
 
 resource "aws_iam_role_policy_attachment" "redis_task_execution" {
   role       = aws_iam_role.redis_task_execution.name

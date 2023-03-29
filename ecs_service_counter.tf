@@ -38,9 +38,8 @@ resource "aws_ecs_task_definition" "counter" {
     }
   ])
 
-  cpu    = "256"
-  memory = "512"
-
+  cpu    = 256
+  memory = 512
 }
 
 resource "aws_cloudwatch_log_group" "counter" {
@@ -100,8 +99,6 @@ resource "aws_ecs_service" "counter" {
       }
     }
   }
-
-
 
   task_definition = aws_ecs_task_definition.counter.arn
 }
