@@ -102,6 +102,7 @@ resource "aws_cloudwatch_log_group" "redis_ecs_service_connect" {
 }
 
 resource "aws_security_group" "redis" {
+  name   = "redis"
   vpc_id = aws_vpc.default.id
 }
 

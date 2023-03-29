@@ -51,7 +51,7 @@ resource "aws_ecs_service" "counter" {
   name    = "counter"
   cluster = aws_ecs_cluster.default.name
 
-  desired_count = 1
+  desired_count = 3
 
   enable_execute_command = true
 
@@ -111,6 +111,7 @@ resource "aws_cloudwatch_log_group" "counter_ecs_service_connect" {
 }
 
 resource "aws_security_group" "counter" {
+  name   = "counter"
   vpc_id = aws_vpc.default.id
 }
 
@@ -157,4 +158,20 @@ resource "aws_iam_role_policy_attachment" "counter_task_ecs_exec" {
 resource "aws_iam_role_policy_attachment" "counter_task_execution" {
   role       = aws_iam_role.counter_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+data "aws_network_interface" "counter" {
+  for_each = toset(data.aws_network_interfaces.counter.ids)
+  id = each.key
+}
+
+data "aws_network_interfaces" "counter" {
+  filter {
+    name   = "group-id"
+    values = [aws_security_group.counter.id]
+  }
+}
+
+output "counter_eni" {
+  value = [ for eni in data.aws_network_interface.counter : eni.association[0].public_ip ]
 }

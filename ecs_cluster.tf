@@ -9,6 +9,8 @@ resource "aws_ecs_cluster" "default" {
   service_connect_defaults {
     namespace = aws_service_discovery_http_namespace.default.arn
   }
+
+  depends_on = [aws_cloudwatch_log_group.container_insights_performance]
 }
 
 resource "aws_service_discovery_http_namespace" "default" {
