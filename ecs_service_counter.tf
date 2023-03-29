@@ -107,7 +107,8 @@ resource "aws_ecs_service" "counter" {
 }
 
 resource "aws_cloudwatch_log_group" "counter_ecs_service_connect" {
-  name = "/ecs/counter"
+  name              = "/ecs/counter"
+  retention_in_days = 1
 }
 
 resource "aws_security_group" "counter" {
@@ -189,30 +190,7 @@ resource "aws_iam_role_policy_attachment" "counter_task" {
   policy_arn = aws_iam_policy.counter_task.arn
 }
 
-resource "aws_iam_policy" "counter_task_execution" {
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage",
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-}
-
 resource "aws_iam_role_policy_attachment" "counter_task_execution" {
   role       = aws_iam_role.counter_task_execution.name
-  policy_arn = aws_iam_policy.counter_task_execution.arn
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }

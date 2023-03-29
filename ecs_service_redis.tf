@@ -95,7 +95,8 @@ resource "aws_ecs_service" "redis" {
 }
 
 resource "aws_cloudwatch_log_group" "redis_ecs_service_connect" {
-  name = "/ecs/redis"
+  name              = "/ecs/redis"
+  retention_in_days = 1
 }
 
 resource "aws_security_group" "redis" {
@@ -144,30 +145,8 @@ resource "aws_iam_role" "redis_task_execution" {
   assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
-data "aws_iam_policy_document" "redis_task_execution" {
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents"
-    ]
-
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_policy" "redis_task_execution" {
-  name   = "redis-task-execution"
-  policy = data.aws_iam_policy_document.redis_task_execution.json
-}
 
 resource "aws_iam_role_policy_attachment" "redis_task_execution" {
   role       = aws_iam_role.redis_task_execution.name
-  policy_arn = aws_iam_policy.redis_task_execution.arn
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
