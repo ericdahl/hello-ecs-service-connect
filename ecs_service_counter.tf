@@ -101,6 +101,8 @@ resource "aws_ecs_service" "counter" {
   }
 
   task_definition = aws_ecs_task_definition.counter.arn
+
+  depends_on = [aws_ecs_service.redis]
 }
 
 resource "aws_cloudwatch_log_group" "counter_ecs_service_connect" {
