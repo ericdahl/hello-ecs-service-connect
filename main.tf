@@ -14,3 +14,16 @@ data "aws_default_tags" "default" {}
 locals {
   name = data.aws_default_tags.default.tags["Name"]
 }
+
+data "aws_iam_policy_document" "role_assume_ecs_tasks" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}

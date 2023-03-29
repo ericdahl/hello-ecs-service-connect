@@ -140,41 +140,13 @@ resource "aws_security_group_rule" "counter_ingress_admin" {
 }
 
 resource "aws_iam_role" "counter_task_execution" {
-  name = "counter-task-execution"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
+  name               = "counter-task-execution"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
 resource "aws_iam_role" "counter_task" {
-  name = "counter-task"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
+  name               = "counter-task"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
 data "aws_iam_policy_document" "counter_task" {

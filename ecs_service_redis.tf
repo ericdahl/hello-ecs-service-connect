@@ -140,45 +140,31 @@ resource "aws_security_group_rule" "redis_ingress_counter" {
 }
 
 resource "aws_iam_role" "redis_task_execution" {
-  name = "redis-task-execution"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
+  name               = "redis-task-execution"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
-EOF
+
+data "aws_iam_policy_document" "redis_task_execution" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "redis_task_execution" {
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage",
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOF
+  name   = "redis-task-execution"
+  policy = data.aws_iam_policy_document.redis_task_execution.json
 }
 
 resource "aws_iam_role_policy_attachment" "redis_task_execution" {
