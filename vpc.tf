@@ -11,6 +11,7 @@ resource "aws_subnet" "public" {
   availability_zone = "us-east-1a"
 
   cidr_block = "10.0.0.0/24"
+  map_public_ip_on_launch = true
 }
 
 resource "aws_internet_gateway" "default" {

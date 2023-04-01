@@ -1,7 +1,7 @@
 resource "aws_ecs_task_definition" "counter" {
   family = "counter"
 
-  requires_compatibilities = ["FARGATE"]
+  requires_compatibilities = ["EC2"]
 
   execution_role_arn = aws_iam_role.counter_task_execution.arn
 
@@ -56,16 +56,13 @@ resource "aws_ecs_service" "counter" {
 
   enable_execute_command = true
 
-  capacity_provider_strategy {
-    capacity_provider = "FARGATE"
-    weight            = 100
-  }
+  launch_type = "EC2"
 
   network_configuration {
 
     # for demo purposes only; no private subnets here
     # to save costs on NAT GW, speed up deploys, etc
-    assign_public_ip = true
+#    assign_public_ip = true
 
     subnets = [
       aws_subnet.public.id
