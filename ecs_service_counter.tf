@@ -38,9 +38,8 @@ resource "aws_ecs_task_definition" "counter" {
     }
   ])
 
-  cpu    = "256"
-  memory = "512"
-
+  cpu    = 256
+  memory = 512
 }
 
 resource "aws_cloudwatch_log_group" "counter" {
@@ -52,7 +51,7 @@ resource "aws_ecs_service" "counter" {
   name    = "counter"
   cluster = aws_ecs_cluster.default.name
 
-  desired_count = 1
+  desired_count = 3
 
   enable_execute_command = true
 
@@ -98,16 +97,18 @@ resource "aws_ecs_service" "counter" {
     }
   }
 
-
-
   task_definition = aws_ecs_task_definition.counter.arn
+
+  depends_on = [aws_ecs_service.redis]
 }
 
 resource "aws_cloudwatch_log_group" "counter_ecs_service_connect" {
-  name = "/ecs/counter"
+  name              = "/ecs/counter"
+  retention_in_days = 1
 }
 
 resource "aws_security_group" "counter" {
+  name   = "counter"
   vpc_id = aws_vpc.default.id
 }
 
@@ -137,107 +138,37 @@ resource "aws_security_group_rule" "counter_ingress_admin" {
 }
 
 resource "aws_iam_role" "counter_task_execution" {
-  name = "counter-task-execution"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
+  name               = "counter-task-execution"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
 resource "aws_iam_role" "counter_task" {
-  name = "counter-task"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
+  name               = "counter-task"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
-data "aws_iam_policy_document" "counter_task" {
-
-  statement {
-
-    effect = "Allow"
-
-    actions = [
-      "ssmmessages:CreateControlChannel",
-      "ssmmessages:CreateDataChannel",
-      "ssmmessages:OpenControlChannel",
-      "ssmmessages:OpenDataChannel"
-    ]
-
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "logs:DescribeLogGroups"
-    ]
-
-    resources = ["*"]
-  }
-
-}
-
-
-resource "aws_iam_policy" "counter_task" {
-  name = "counter-task"
-
-  policy = data.aws_iam_policy_document.counter_task.json
-}
-
-resource "aws_iam_role_policy_attachment" "counter_task" {
+resource "aws_iam_role_policy_attachment" "counter_task_ecs_exec" {
   role       = aws_iam_role.counter_task.name
-  policy_arn = aws_iam_policy.counter_task.arn
-}
-
-resource "aws_iam_policy" "counter_task_execution" {
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage",
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOF
+  policy_arn = aws_iam_policy.ecs_task_exec.arn
 }
 
 resource "aws_iam_role_policy_attachment" "counter_task_execution" {
   role       = aws_iam_role.counter_task_execution.name
-  policy_arn = aws_iam_policy.counter_task_execution.arn
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+data "aws_network_interface" "counter" {
+  for_each = toset(data.aws_network_interfaces.counter.ids)
+  id = each.key
+}
+
+data "aws_network_interfaces" "counter" {
+  filter {
+    name   = "group-id"
+    values = [aws_security_group.counter.id]
+  }
+}
+
+output "counter_eni" {
+  value = [ for eni in data.aws_network_interface.counter : eni.association[0].public_ip ]
 }

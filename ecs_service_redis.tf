@@ -30,9 +30,8 @@ resource "aws_ecs_task_definition" "redis" {
     }
   ])
 
-  cpu    = "256"
-  memory = "512"
-
+  cpu    = 256
+  memory = 512
 }
 
 resource "aws_cloudwatch_log_group" "redis" {
@@ -45,6 +44,8 @@ resource "aws_ecs_service" "redis" {
   cluster = aws_ecs_cluster.default.name
 
   desired_count = 1
+
+  enable_execute_command = true
 
   launch_type = "EC2"
 
@@ -92,10 +93,12 @@ resource "aws_ecs_service" "redis" {
 }
 
 resource "aws_cloudwatch_log_group" "redis_ecs_service_connect" {
-  name = "/ecs/redis"
+  name              = "/ecs/redis"
+  retention_in_days = 1
 }
 
 resource "aws_security_group" "redis" {
+  name   = "redis"
   vpc_id = aws_vpc.default.id
 }
 
@@ -137,48 +140,21 @@ resource "aws_security_group_rule" "redis_ingress_counter" {
 }
 
 resource "aws_iam_role" "redis_task_execution" {
-  name = "redis-task-execution"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_policy" "redis_task_execution" {
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage",
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOF
+  name               = "redis-task-execution"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
 }
 
 resource "aws_iam_role_policy_attachment" "redis_task_execution" {
   role       = aws_iam_role.redis_task_execution.name
-  policy_arn = aws_iam_policy.redis_task_execution.arn
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role" "redis_task" {
+  name               = "redis-task"
+  assume_role_policy = data.aws_iam_policy_document.role_assume_ecs_tasks.json
+}
+
+resource "aws_iam_role_policy_attachment" "redis_task_ecs_exec" {
+  role       = aws_iam_role.redis_task.name
+  policy_arn = aws_iam_policy.ecs_task_exec.arn
 }
