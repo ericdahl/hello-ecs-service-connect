@@ -156,19 +156,19 @@ resource "aws_iam_role_policy_attachment" "counter_task_execution" {
   role       = aws_iam_role.counter_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+#
+#data "aws_network_interface" "counter" {
+#  for_each = toset(data.aws_network_interfaces.counter.ids)
+#  id = each.key
+#}
+#
+#data "aws_network_interfaces" "counter" {
+#  filter {
+#    name   = "group-id"
+#    values = [aws_security_group.counter.id]
+#  }
+#}
 
-data "aws_network_interface" "counter" {
-  for_each = toset(data.aws_network_interfaces.counter.ids)
-  id = each.key
-}
-
-data "aws_network_interfaces" "counter" {
-  filter {
-    name   = "group-id"
-    values = [aws_security_group.counter.id]
-  }
-}
-
-output "counter_eni" {
-  value = [ for eni in data.aws_network_interface.counter : eni.association[0].public_ip ]
-}
+#output "counter_eni" {
+#  value = [ for eni in data.aws_network_interface.counter : eni.association[0].public_ip ]
+#}

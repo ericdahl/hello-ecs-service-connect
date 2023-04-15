@@ -49,6 +49,19 @@ Hello from ip-10-0-0-44.ec2.internal (count is 10)
     - memory: 0 / cpu_shares: 2
     - uses a None network
 
+### Network Flow
+
+- Client hello-ecs `IP 10.0.0.124.37748 > 10.0.0.71.6379`
+  - container f44a34d49ff0
+  - task 62d171763ab948e7944dfd8d28915ad3
+  - task IP  10.0.0.124
+- Client Proxy
+  - 127.0.0.1.33136
+- Server redis 
+  - container 9d1725aaf4c6
+  - task bcb73ca91bb24101994f4f0b2a0c8bf2
+  - task IP `10.0.0.71`
+
 ### Envoy Config
 
 ```
@@ -146,5 +159,5 @@ statsConfig:
 
 ## TODO
 
-- seems to randomly not work. Timing issues or DNS caching?
-- is HTTP+DNS namespace required or just HTTP? docs indicate HTTP but doesn't work?
+- trace through DNS flow for Service Connect
+- swap with normal network mode for comparison

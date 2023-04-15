@@ -5,6 +5,7 @@ resource "aws_ecs_task_definition" "redis" {
 
   execution_role_arn = aws_iam_role.redis_task_execution.arn
 
+  task_role_arn = aws_iam_role.redis_task.arn
 
   network_mode = "awsvpc"
   container_definitions = jsonencode([
