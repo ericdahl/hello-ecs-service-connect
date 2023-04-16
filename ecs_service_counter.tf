@@ -51,7 +51,7 @@ resource "aws_ecs_service" "counter" {
   name    = "counter"
   cluster = aws_ecs_cluster.default.name
 
-  desired_count = 3
+  desired_count = 1
 
   enable_execute_command = true
 
@@ -135,6 +135,19 @@ resource "aws_security_group_rule" "counter_ingress_admin" {
   protocol  = "-1"
 
   cidr_blocks = [var.admin_cidr]
+}
+
+# for testing
+resource "aws_security_group_rule" "counter_ingress_vpc" {
+  security_group_id = aws_security_group.counter.id
+
+  type = "ingress"
+
+  from_port = 0
+  to_port   = 0
+  protocol  = "-1"
+
+  cidr_blocks = [aws_vpc.default.cidr_block]
 }
 
 resource "aws_iam_role" "counter_task_execution" {
