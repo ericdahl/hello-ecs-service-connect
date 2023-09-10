@@ -1,7 +1,7 @@
 resource "aws_ecs_task_definition" "redis" {
   family = "redis"
 
-  requires_compatibilities = ["EC2"]
+  requires_compatibilities = ["FARGATE"]
 
   execution_role_arn = aws_iam_role.redis_task_execution.arn
 
@@ -48,13 +48,11 @@ resource "aws_ecs_service" "redis" {
 
   enable_execute_command = true
 
-  launch_type = "EC2"
-
   network_configuration {
 
     # for demo purposes only; no private subnets here
     # to save costs on NAT GW, speed up deploys, etc
-#    assign_public_ip = true
+    assign_public_ip = true
 
     subnets = [
       aws_subnet.public.id
@@ -91,6 +89,12 @@ resource "aws_ecs_service" "redis" {
   }
 
   task_definition = aws_ecs_task_definition.redis.arn
+
+  lifecycle {
+    ignore_changes = [
+      capacity_provider_strategy
+    ]
+  }
 }
 
 resource "aws_cloudwatch_log_group" "redis_ecs_service_connect" {

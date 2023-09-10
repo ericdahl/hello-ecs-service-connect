@@ -12,18 +12,18 @@ resource "aws_ecs_cluster" "default" {
 
   depends_on = [aws_cloudwatch_log_group.container_insights_performance]
 }
-#
-#resource "aws_ecs_cluster_capacity_providers" "default" {
-#  cluster_name = aws_ecs_cluster.default.name
-#
-#  capacity_providers = ["FARGATE"]
-#
-#  default_capacity_provider_strategy {
-#    base              = 1
-#    weight            = 100
-#    capacity_provider = "FARGATE"
-#  }
-#}
+
+resource "aws_ecs_cluster_capacity_providers" "default" {
+  cluster_name = aws_ecs_cluster.default.name
+
+  capacity_providers = ["FARGATE"]
+
+  default_capacity_provider_strategy {
+    base              = 1
+    weight            = 100
+    capacity_provider = "FARGATE"
+  }
+}
 
 resource "aws_service_discovery_http_namespace" "default" {
   name = local.name

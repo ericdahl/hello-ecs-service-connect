@@ -1,7 +1,7 @@
 resource "aws_ecs_task_definition" "counter" {
   family = "counter"
 
-  requires_compatibilities = ["EC2"]
+  requires_compatibilities = ["FARGATE"]
 
   execution_role_arn = aws_iam_role.counter_task_execution.arn
 
@@ -51,18 +51,16 @@ resource "aws_ecs_service" "counter" {
   name    = "counter"
   cluster = aws_ecs_cluster.default.name
 
-  desired_count = 2
-
+  desired_count = 3
   enable_execute_command = true
 
-  launch_type = "EC2"
 
   network_configuration {
 
     # for demo purposes only; no private subnets here
     # to save costs on NAT GW, speed up deploys, etc
     # only works for Fargate
-#    assign_public_ip = true
+    assign_public_ip = true
 
     subnets = [
       aws_subnet.public.id
@@ -101,6 +99,12 @@ resource "aws_ecs_service" "counter" {
   task_definition = aws_ecs_task_definition.counter.arn
 
   depends_on = [aws_ecs_service.redis]
+
+  lifecycle {
+    ignore_changes = [
+      capacity_provider_strategy
+    ]
+  }
 }
 
 resource "aws_cloudwatch_log_group" "counter_ecs_service_connect" {
@@ -170,19 +174,19 @@ resource "aws_iam_role_policy_attachment" "counter_task_execution" {
   role       = aws_iam_role.counter_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
-#
-#data "aws_network_interface" "counter" {
-#  for_each = toset(data.aws_network_interfaces.counter.ids)
-#  id = each.key
-#}
-#
-#data "aws_network_interfaces" "counter" {
-#  filter {
-#    name   = "group-id"
-#    values = [aws_security_group.counter.id]
-#  }
-#}
 
-#output "counter_eni" {
-#  value = [ for eni in data.aws_network_interface.counter : eni.association[0].public_ip ]
-#}
+data "aws_network_interface" "counter" {
+  for_each = toset(data.aws_network_interfaces.counter.ids)
+  id = each.key
+}
+
+data "aws_network_interfaces" "counter" {
+  filter {
+    name   = "group-id"
+    values = [aws_security_group.counter.id]
+  }
+}
+
+output "counter_eni" {
+  value = [ for eni in data.aws_network_interface.counter : eni.association[0].public_ip ]
+}
