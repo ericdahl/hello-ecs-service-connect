@@ -38,6 +38,8 @@ Hello from ip-10-0-0-44.ec2.internal (count is 10)
 
 ## EC2 notes
 
+See branch `ec2`, converts from fargate
+
 - app task has 3 containers:
   1. application container itself
     - uses network of container:pause (nothing in bridge network)

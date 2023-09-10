@@ -51,7 +51,7 @@ resource "aws_ecs_service" "counter" {
   name    = "counter"
   cluster = aws_ecs_cluster.default.name
 
-  desired_count = 1
+  desired_count = 2
 
   enable_execute_command = true
 
@@ -61,6 +61,7 @@ resource "aws_ecs_service" "counter" {
 
     # for demo purposes only; no private subnets here
     # to save costs on NAT GW, speed up deploys, etc
+    # only works for Fargate
 #    assign_public_ip = true
 
     subnets = [

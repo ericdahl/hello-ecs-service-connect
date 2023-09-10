@@ -29,8 +29,6 @@ resource "aws_autoscaling_group" "default" {
       instance_warmup        = 0
     }
   }
-
-  protect_from_scale_in = true
 }
 
 resource "aws_key_pair" "default" {
@@ -45,7 +43,7 @@ resource "aws_launch_template" "default" {
   }
 
   image_id      = data.aws_ssm_parameter.ecs_amazon_linux_2.value
-  instance_type = "t3.medium"
+  instance_type = "m6a.xlarge" # supports 4 ENIs
   key_name      = aws_key_pair.default.key_name
 
   monitoring {
