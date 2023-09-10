@@ -52,6 +52,6 @@ data "aws_iam_policy_document" "ecs_task_exec" {
 }
 
 resource "aws_iam_policy" "ecs_task_exec" {
-  name = "ecs-task-exec"
+  name   = "ecs-task-exec"
   policy = data.aws_iam_policy_document.ecs_task_exec.json
 }

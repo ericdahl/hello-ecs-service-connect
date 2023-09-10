@@ -54,7 +54,7 @@ resource "aws_ecs_service" "redis" {
 
     # for demo purposes only; no private subnets here
     # to save costs on NAT GW, speed up deploys, etc
-#    assign_public_ip = true
+    #    assign_public_ip = true
 
     subnets = [
       aws_subnet.public.id

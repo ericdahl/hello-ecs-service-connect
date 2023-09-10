@@ -52,11 +52,11 @@ resource "aws_launch_template" "default" {
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
-  user_data =base64encode(<<EOF
+  user_data = base64encode(<<EOF
 #!/bin/bash
 echo "ECS_CLUSTER=${local.name}" >> /etc/ecs/ecs.config
 EOF
-)
+  )
 
 }
 
@@ -100,8 +100,8 @@ resource "aws_security_group_rule" "ec2_ingress_ssh" {
 
 
 resource "aws_iam_role" "ec2_role" {
-  name        = "${local.name}-instance-role"
-#  description = "Role applied to ECS container instances - EC2 hosts - allowing them to register themselves, pull images from ECR, etc."
+  name = "${local.name}-instance-role"
+  #  description = "Role applied to ECS container instances - EC2 hosts - allowing them to register themselves, pull images from ECR, etc."
 
   assume_role_policy = <<EOF
 {
