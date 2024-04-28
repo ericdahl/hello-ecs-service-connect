@@ -67,8 +67,7 @@ resource "aws_ecs_service" "redis" {
     enabled = true
 
     service {
-      port_name = "redis"
-
+      port_name      = "redis"
       discovery_name = "redis"
 
       client_alias {
